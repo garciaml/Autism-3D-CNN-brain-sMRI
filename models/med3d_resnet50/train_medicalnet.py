@@ -96,18 +96,13 @@ for i, subid in enumerate(common_subjects_to_analyze):
     elif "val" in datasets[i]:
         #common_filenames = glob(os.path.join(bids_dir, "preprocessed_2", "val", "%s_prep_2.nii.gz"%subid))
         validation_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(bids_dir, "preprocessed_2", "val", subid + "_prep_2.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
-    #elif "test" in datasets[i]:
-        #common_filenames = glob(os.path.join(bids_dir, "preprocessed_2", "test", "%s_prep_2.nii.gz"%subid))
-    #    test_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(bids_dir, "preprocessed_2", "test", subid + "_prep_2.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
 
 train_subjects_dataset = tio.SubjectsDataset(train_subjects)
 validation_subjects_dataset = tio.SubjectsDataset(validation_subjects)
-#test_subjects_dataset = tio.SubjectsDataset(test_subjects, transform=transform)
 
 # Dataloader
 train_loader = DataLoader(train_subjects_dataset, batch_size=2, pin_memory=torch.cuda.is_available(), shuffle=True)
 val_loader = DataLoader(validation_subjects_dataset, batch_size=2, pin_memory=torch.cuda.is_available())
-#test_loader = DataLoader(test_subjects_dataset, batch_size=2, pin_memory=torch.cuda.is_available())
 
 
 # Load model, initialize CrossEntropyLoss and Adam optimizer
@@ -134,7 +129,6 @@ model.to(device)
 
 loss_function = torch.nn.CrossEntropyLoss(ignore_index=-1)
 optimizer = torch.optim.Adam(model.parameters(), 1e-3)
-#optimizer = torch.optim.Adam(model.parameters(), 1e-4)
 
 #CUDA_LAUNCH_BLOCKING=1
 # start a typical PyTorch training
