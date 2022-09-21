@@ -1,7 +1,9 @@
+#!/bin/usr/python3
+
 
 # Use example: python run_transforms_on_masks.py output_highresnet_train1 output_highresnet_train1_transformed 
 
-# Import libraries
+## Import libraries
 import os
 import shutil
 import tempfile
@@ -15,25 +17,27 @@ from monai.data import DataLoader
 import monai
 from helpers import makedir
 import nibabel as nib
-import torch.nn as nn
 #print_config()
 
 
+## Create a parser to let the user give input parameters
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('masks_dir', help='The directory with the input dataset.')
 parser.add_argument('output_dir', default='output_masks_transformed', help='The directory where the output masks should be stored.')
 
 args = parser.parse_args()
 
-# BIDS data
+## Parse input data
 masks_dir = args.masks_dir
 output_dir = args.output_dir
+
+## Create output directory
 makedir(output_dir)
 
-# Find good files
+## Find good files
 subject_files = glob(os.path.join(masks_dir, "*nii.gz"))
 
-### 1- Preprocessing - for all masks 
+## Preprocessing steps - for all masks 
 # Spatial normalization with Resample
 # crop or pad 256*256*256 or EnsureShapeMultiple(32)
 # Reorder data to be closest to canonical (RAS+) orientation
@@ -43,6 +47,7 @@ transform = tio.Compose([
     tio.ToCanonical()
     ])
 
+## Apply transformations to masks to make them fit the input space again
 def nib_reader(path):
     load_img = nib.load(path)
     img = np.squeeze(load_img.get_fdata())
