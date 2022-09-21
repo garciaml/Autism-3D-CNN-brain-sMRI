@@ -1,17 +1,22 @@
+#!/bin/usr/python3
+
+
 # Use example: python generate_ROI_results.py GIFNiftyNet.ctbl df_subids_filenames_densenet121_32ep.csv test_output_roi_results 
 
+## Import libraries
+import os
+import argparse
 import nibabel as nib
+from nibabel.affines import apply_affine
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pandas as pd
-import os
-import argparse
 from helpers import makedir
-from nibabel.affines import apply_affine
 #import numpy.linalg as npl
 
 
+## Define useful functions to generate ROI results for each participant
 def generate_one_subject_ROI_results(att_map, img_seg_or, img_affine, img_seg_or_affine, df_GIF_ROIs_numbers):
     # Get the matrix to convert coordinates from the final segmentation image transformed to the original segmentation image
     m_conversion = np.linalg.inv(img_affine).dot(img_seg_or_affine)
@@ -74,76 +79,6 @@ if __name__=="__main__":
     df_GIF_ROIs_numbers.columns = ["ROI_number", "ROI_name", "coord_x", "coord_y", "coord_z", "color"]
     # Load subids and filenames
     df_subids_filenames = pd.read_csv(args.subids_files_filename)
-
-    ## Initialize Global Results DF for all the subjects and for each dataset and for each label
-    #global_roi_results_all = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_all = global_roi_results_all.sort_values("ROI_number")
-    ## All ASD subjects
-    #global_roi_results_all_ASD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_all_ASD = global_roi_results_all_ASD.sort_values("ROI_number")
-    ## All non ASD subjects
-    #global_roi_results_all_TD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_all_TD = global_roi_results_all_TD.sort_values("ROI_number")
-    ## All subjects in each dataset
-    #global_roi_results_train = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_train = global_roi_results_train.sort_values("ROI_number")
-    #global_roi_results_val = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_val = global_roi_results_val.sort_values("ROI_number")
-    #global_roi_results_test = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_test = global_roi_results_test.sort_values("ROI_number")
-    ## ASD subjects in each dataset
-    #global_roi_results_train_ASD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_train_ASD = global_roi_results_train_ASD.sort_values("ROI_number")
-    #global_roi_results_val_ASD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_val_ASD = global_roi_results_val_ASD.sort_values("ROI_number")
-    #global_roi_results_test_ASD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_test_ASD = global_roi_results_test_ASD.sort_values("ROI_number")
-    ## Non ASD subjects in each dataset
-    #global_roi_results_train_TD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_train_TD = global_roi_results_train_TD.sort_values("ROI_number")
-    #global_roi_results_val_TD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_val_TD = global_roi_results_val_TD.sort_values("ROI_number")
-    #global_roi_results_test_TD = pd.DataFrame({"ROI_number": df_GIF_ROIs_numbers.ROI_number.astype(int).tolist(), 
-    #    "ROI_name": df_GIF_ROIs_numbers.ROI_name.tolist(), 
-    #    "Sum_Relative_frequency": [0]*df_GIF_ROIs_numbers.shape[0], "Sum_Size": [0]*df_GIF_ROIs_numbers.shape[0]})
-    #global_roi_results_test_TD = global_roi_results_test_TD.sort_values("ROI_number")
-
-    ## Get number of subjects per category to compute mean columns at the end
-    #n_all = df_subids_filenames.shape[0]
-    #n_train = df_subids_filenames[df_subids_filenames.dataset == "train"].shape[0]
-    #n_val = df_subids_filenames[df_subids_filenames.dataset == "val"].shape[0]
-    #n_test = df_subids_filenames[df_subids_filenames.dataset == "test"].shape[0]
-    #n_asd = df_subids_filenames[df_subids_filenames.label == 1].shape[0]
-    #n_td = df_subids_filenames[df_subids_filenames.label == 0].shape[0]
-    #n_train_asd = df_subids_filenames[(df_subids_filenames.dataset == "train") & (df_subids_filenames.label == 1)].shape[0]
-    #n_train_td = df_subids_filenames[(df_subids_filenames.dataset == "train") & (df_subids_filenames.label == 0)].shape[0]
-    #n_val_asd = df_subids_filenames[(df_subids_filenames.dataset == "val") & (df_subids_filenames.label == 1)].shape[0]
-    #n_val_td = df_subids_filenames[(df_subids_filenames.dataset == "val") & (df_subids_filenames.label == 0)].shape[0]
-    #n_test_asd = df_subids_filenames[(df_subids_filenames.dataset == "test") & (df_subids_filenames.label == 1)].shape[0]
-    #n_test_td = df_subids_filenames[(df_subids_filenames.dataset == "test") & (df_subids_filenames.label == 0)].shape[0]
-
     # LOOP over subjects
     for i in range(df_subids_filenames.shape[0]):
         #dataset = df_subids_filenames.iloc[i, :]["dataset"]
@@ -167,100 +102,3 @@ if __name__=="__main__":
         df_ROI_freq_sizes = df_ROI_freq_sizes.sort_values("ROI_number")
         df_ROI_freq_sizes.to_csv(os.path.join(output_dir, str(subid) + "_df_ROI_freq_sizes.csv"))
         ## go over the df_ROI_freq_sizes to fill the global results
-        #global_roi_results_all["Sum_Relative_frequency"] = global_roi_results_all["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #global_roi_results_all["Sum_Size"] = global_roi_results_all["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        ## Per modality
-        #if label == 1:
-        #    global_roi_results_all_ASD["Sum_Relative_frequency"] = global_roi_results_all_ASD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #    global_roi_results_all_ASD["Sum_Size"] = global_roi_results_all_ASD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #else:
-        #    global_roi_results_all_TD["Sum_Relative_frequency"] = global_roi_results_all_TD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #    global_roi_results_all_TD["Sum_Size"] = global_roi_results_all_TD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        ## Per dataset: all the subjects and per modality
-        #if "train" in dataset:
-        #    global_roi_results_train["Sum_Relative_frequency"] = global_roi_results_train["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #    global_roi_results_train["Sum_Size"] = global_roi_results_train["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #    if label == 1:
-        #        global_roi_results_train_ASD["Sum_Relative_frequency"] = global_roi_results_train_ASD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #        global_roi_results_train_ASD["Sum_Size"] = global_roi_results_train_ASD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #    else:
-        #        global_roi_results_train_TD["Sum_Relative_frequency"] = global_roi_results_train_TD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #        global_roi_results_train_TD["Sum_Size"] = global_roi_results_train_TD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #elif "val" in dataset:
-        #    global_roi_results_val["Sum_Relative_frequency"] = global_roi_results_val["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #    global_roi_results_val["Sum_Size"] = global_roi_results_val["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #    if label == 1:
-        #        global_roi_results_val_ASD["Sum_Relative_frequency"] = global_roi_results_val_ASD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #        global_roi_results_val_ASD["Sum_Size"] = global_roi_results_val_ASD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #    else:
-        #        global_roi_results_val_TD["Sum_Relative_frequency"] = global_roi_results_val_TD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #        global_roi_results_val_TD["Sum_Size"] = global_roi_results_val_TD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #elif "test" in dataset:
-        #    global_roi_results_test["Sum_Relative_frequency"] = global_roi_results_test["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #    global_roi_results_test["Sum_Size"] = global_roi_results_test["Sum_Size"] + df_ROI_freq_sizes["Size"]
-
-        #    if label == 1:
-        #        global_roi_results_test_ASD["Sum_Relative_frequency"] = global_roi_results_test_ASD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #        global_roi_results_test_ASD["Sum_Size"] = global_roi_results_test_ASD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-        #    else:
-        #        global_roi_results_test_TD["Sum_Relative_frequency"] = global_roi_results_test_TD["Sum_Relative_frequency"] + df_ROI_freq_sizes["Relative_frequency"]
-        #        global_roi_results_test_TD["Sum_Size"] = global_roi_results_test_TD["Sum_Size"] + df_ROI_freq_sizes["Size"]
-
-    ## Create mean columns
-    #global_roi_results_all["Mean_Relative_frequency"] = round(global_roi_results_all["Sum_Relative_frequency"]/n_all, 3)
-    #global_roi_results_all["Mean_Size"] = round(global_roi_results_all["Sum_Size"]/n_all, 3)
-    #global_roi_results_all_ASD["Mean_Relative_frequency"] = round(global_roi_results_all_ASD["Sum_Relative_frequency"]/n_asd, 3)
-    #global_roi_results_all_ASD["Mean_Size"] = round(global_roi_results_all_ASD["Sum_Size"]/n_asd, 3)
-    #global_roi_results_all_TD["Mean_Relative_frequency"] = round(global_roi_results_all_TD["Sum_Relative_frequency"]/n_td, 3)
-    #global_roi_results_all_TD["Mean_Size"] = round(global_roi_results_all_TD["Sum_Size"]/n_td, 3)
-    #global_roi_results_train["Mean_Relative_frequency"] = round(global_roi_results_train["Sum_Relative_frequency"]/n_train, 3)
-    #global_roi_results_train["Mean_Size"] = round(global_roi_results_train["Sum_Size"]/n_train, 3)
-    #global_roi_results_val["Mean_Relative_frequency"] = round(global_roi_results_val["Sum_Relative_frequency"]/n_val, 3)
-    #global_roi_results_val["Mean_Size"] = round(global_roi_results_val["Sum_Size"]/n_val, 3)
-    #global_roi_results_test["Mean_Relative_frequency"] = round(global_roi_results_test["Sum_Relative_frequency"]/n_test, 3)
-    #global_roi_results_test["Mean_Size"] = round(global_roi_results_test["Sum_Size"]/n_test, 3)
-    #
-    #global_roi_results_train_ASD["Mean_Relative_frequency"] = round(global_roi_results_train_ASD["Sum_Relative_frequency"]/n_train_asd, 3)
-    #global_roi_results_train_ASD["Mean_Size"] = round(global_roi_results_train_ASD["Sum_Size"]/n_train_asd, 3)
-    #global_roi_results_val_ASD["Mean_Relative_frequency"] = round(global_roi_results_val_ASD["Sum_Relative_frequency"]/n_val_asd, 3)
-    #global_roi_results_val_ASD["Mean_Size"] = round(global_roi_results_val_ASD["Sum_Size"]/n_val_asd, 3)
-    #global_roi_results_test_ASD["Mean_Relative_frequency"] = round(global_roi_results_test_ASD["Sum_Relative_frequency"]/n_test_asd, 3)
-    #global_roi_results_test_ASD["Mean_Size"] = round(global_roi_results_test_ASD["Sum_Size"]/n_test_asd, 3)
-    #global_roi_results_train_TD["Mean_Relative_frequency"] = round(global_roi_results_train_TD["Sum_Relative_frequency"]/n_train_td, 3)
-    #global_roi_results_train_TD["Mean_Size"] = round(global_roi_results_train_TD["Sum_Size"]/n_train_td, 3)
-    #global_roi_results_val_TD["Mean_Relative_frequency"] = round(global_roi_results_val_TD["Sum_Relative_frequency"]/n_val_td, 3)
-    #global_roi_results_val_TD["Mean_Size"] = round(global_roi_results_val_TD["Sum_Size"]/n_val_td, 3)
-    #global_roi_results_test_TD["Mean_Relative_frequency"] = round(global_roi_results_test_TD["Sum_Relative_frequency"]/n_test_td, 3)
-    #global_roi_results_test_TD["Mean_Size"] = round(global_roi_results_test_TD["Sum_Size"]/n_test_td, 3)
-    ## SAVE in csv files
-    #global_roi_results_all.to_csv(os.path.join(output_dir, "global_roi_results_all.csv"), index=None)
-    #global_roi_results_all_ASD.to_csv(os.path.join(output_dir, "global_roi_results_all_ASD.csv"), index=None)
-    #global_roi_results_all_TD.to_csv(os.path.join(output_dir, "global_roi_results_all_TD.csv"), index=None)
-    #global_roi_results_train.to_csv(os.path.join(output_dir, "global_roi_results_train.csv"), index=None)
-    #global_roi_results_val.to_csv(os.path.join(output_dir, "global_roi_results_val.csv"), index=None)
-    #global_roi_results_test.to_csv(os.path.join(output_dir, "global_roi_results_test.csv"), index=None)
-    #global_roi_results_train_ASD.to_csv(os.path.join(output_dir, "global_roi_results_train_ASD.csv"), index=None)
-    #global_roi_results_val_ASD.to_csv(os.path.join(output_dir, "global_roi_results_val_ASD.csv"), index=None)
-    #global_roi_results_test_ASD.to_csv(os.path.join(output_dir, "global_roi_results_test_ASD.csv"), index=None)
-    #global_roi_results_train_TD.to_csv(os.path.join(output_dir, "global_roi_results_train_TD.csv"), index=None)
-    #global_roi_results_val_TD.to_csv(os.path.join(output_dir, "global_roi_results_val_TD.csv"), index=None)
-    #global_roi_results_test_TD.to_csv(os.path.join(output_dir, "global_roi_results_test_TD.csv"), index=None)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
