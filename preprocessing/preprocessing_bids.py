@@ -1,8 +1,8 @@
 #!/bin/usr/python3
 
-# Use example: python preprocessing.py /home/melanie/BIDS_data_test /home/melanie/BIDS_data_test/transforms 
+# Use example: python preprocessing_bids.py /home/melanie/BIDS_data_test /home/melanie/BIDS_data_test/transforms 
 
-# Import libraries
+## Import libraries
 import os
 import shutil
 import tempfile
@@ -38,34 +38,32 @@ from monai.transforms import (
 from torch.utils.tensorboard import SummaryWriter
 from monai.utils import set_determinism
 from helpers import makedir
-from models.resnet2 import resnet50
-from model import generate_model
 from log import create_logger
 from torchsummary import summary
 import time
 import nibabel as nib
-import torch.nn as nn
 #print_config()
 
 
-# Set the seed for reproducibility
+## Set the seed for reproducibility
 set_determinism(seed=0)
 
-
+## Create a parser to let the user give instructions
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
-                    'formatted according to the BIDS standard.')
-
+                    'formatted according to the BIDS standard.'
 args = parser.parse_args()
 
-# BIDS data
+## Parse data
 bids_dir = args.bids_dir
+
+## Create output directories
 makedir(os.path.join(bids_dir, "preprocessed_2"))
 makedir(os.path.join(bids_dir, "preprocessed_2", "train"))
 makedir(os.path.join(bids_dir, "preprocessed_2", "val"))
 makedir(os.path.join(bids_dir, "preprocessed_2", "test"))
 
-# Find good files
+## Find good files
 subject_dirs = glob(os.path.join(bids_dir, "sub-*"))
 subjects_to_analyze = [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
 filenames = []
@@ -81,7 +79,7 @@ for subject_label in subjects_to_analyze:
     if len(sub_filenames) < 1:
         print(subject_label)
 
-# Get labels from participants.tsv
+## Get labels from participants.tsv
 # 1- read tsv file with pd
 df_participants = pd.read_csv(os.path.join(bids_dir, "participants.tsv"), sep="\t", dtype=str)
 # 2- make subjects_to_analyze match subids
@@ -97,8 +95,8 @@ for i, subid in enumerate(subjects_to_analyze):
         labels.append(int(df_participants[df_participants.participant_id == subid]["label"].item()))
         # 4- get dataset from column "dataset"
         datasets.append(df_participants[df_participants.participant_id == subid]["dataset"].item())
-# Create the dictionary
-# 5- create train, val, test dictionaries with keys "image", "label" and "dataset" , adding if condition to get correct dataset
+## Create the dictionary
+# create train, val, test dictionaries with keys "image", "label" and "dataset" , adding if condition to get correct dataset
 train_files = []
 validation_files = []
 test_files = []
@@ -111,7 +109,7 @@ for i, subid in enumerate(common_subjects_to_analyze):
         elif "test" in datasets[i]:
             test_files.append({"image": common_filenames[i], 'label': labels[i]})
 
-### 1- Preprocessing - for all datasets - output_dir_1
+## Preprocessing steps detailed
 # Spatial normalization with Resample
 # Intensity normalization with RescaleIntensity(percentiles=(0.5, 99.5)) and ZNormalization
 # crop or pad 256*256*256 or EnsureShapeMultiple(32)
@@ -125,6 +123,8 @@ transform = tio.Compose([
     tio.ToCanonical()
     ]) 
 
+## Create training, validation, testing subjects datasets including the transorming operations
+## and run the transforms
 def nib_reader(path):
     load_img = nib.load(path)
     img = np.squeeze(load_img.get_fdata())
