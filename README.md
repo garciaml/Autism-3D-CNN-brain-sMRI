@@ -8,4 +8,6 @@ The abstract ***Towards building an interpretable predictive tool for ASD with 3
 
 Preprint released soon !
 
+We used Monai (https://github.com/Project-MONAI/MONAI) to build the DenseNet121 network and MedicalNet to keep on training a pre-trained ResNet50 model (https://github.com/Tencent/MedicalNet). 
+
 ### Instructions
