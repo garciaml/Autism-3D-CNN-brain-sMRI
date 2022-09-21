@@ -2,7 +2,7 @@
 
 # Use example: python predict_medicalnet.py /home/melanie/sMRI_ASD/data/train1/BIDS_data_brain /home/melanie/sMRI_ASD/net2/MedicalNet/train1_models_lr_1e-3_resnet50_new_preproc_from_10ep/model_42_epochs.pth /home/melanie/sMRI_ASD/net2/MedicalNet/train1_models_lr_1e-3_resnet50_new_preproc_from_10ep/predictions/model_42_epochs 
 
-# Import libraries
+## Import libraries
 import os
 import shutil
 import tempfile
@@ -30,10 +30,10 @@ from monai.data import CSVSaver
 from medcam import medcam
 
 
-# Set the seed for reproducibility
+## Set the seed for reproducibility
 set_determinism(seed=0)
 
-
+## Define parser to let the user give instructions
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
@@ -43,10 +43,12 @@ parser.add_argument('--n_classes', default='2', help='Integer; Number of classes
 
 args = parser.parse_args()
 
-# BIDS data
+## Parse Data
 bids_dir = args.bids_dir
 pretrain_path = args.pretrain_path
 output_dir = args.output_dir
+
+## Create directories to store outputs
 makedir(output_dir)
 makedir(os.path.join(output_dir, "train"))
 makedir(os.path.join(output_dir, "validation"))
@@ -54,11 +56,15 @@ makedir(os.path.join(output_dir, "test"))
 makedir(os.path.join(output_dir, "attention_maps"))
 n_classes = int(args.n_classes) 
 
-# Find good files
-# Get labels from participants.tsv
+## Find good files - Get labels from participants.tsv
 # 1- read tsv file with pd
 df_participants = pd.read_csv(os.path.join(bids_dir, "participants.tsv"), sep="\t", dtype=str)
 # 2- make subjects_to_analyze match subids
+common_subjects_to_analyze = df_participants.participant_id.tolist()
+datasets = df_participants.dataset.tolist() 
+labels = df_participants.label.astype(float).tolist()
+
+## Create a subjects dataset
 def nib_reader(path):
     load_img = nib.load(path)
     img = np.squeeze(load_img.get_fdata())
@@ -66,10 +72,6 @@ def nib_reader(path):
     affine = load_img.affine
     load_img.uncache()
     return [torch.tensor(img, dtype=torch.float32), affine]
-
-common_subjects_to_analyze = df_participants.participant_id.tolist()
-datasets = df_participants.dataset.tolist() 
-labels = df_participants.label.astype(float).tolist()
 
 train_subjects = []
 validation_subjects = []
@@ -97,34 +99,26 @@ for i, subid in enumerate(common_subjects_to_analyze):
         test_meta_data['filename'].append(filename)
         test_meta_data['label'].append(labels[i])
 
-#train_subjects_dataset = tio.SubjectsDataset(train_subjects)
-#validation_subjects_dataset = tio.SubjectsDataset(validation_subjects)
-#test_subjects_dataset = tio.SubjectsDataset(test_subjects)
-
 all_subjects = train_subjects + validation_subjects + test_subjects
 subjects_dataset = tio.SubjectsDataset(all_subjects)
 
-# Save meta data
+## Save meta data
 pd.DataFrame(train_meta_data).to_csv(os.path.join(output_dir, "train", "train_meta_data.csv"))
 pd.DataFrame(validation_meta_data).to_csv(os.path.join(output_dir, "validation", "validation_meta_data.csv"))
 pd.DataFrame(test_meta_data).to_csv(os.path.join(output_dir, "test", "test_meta_data.csv"))
 
-# Dataloader
-#train_loader = DataLoader(train_subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available(), shuffle=True)
-#val_loader = DataLoader(validation_subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available())
-#test_loader = DataLoader(test_subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available())
-
+## Dataloader
 #ds_loader = DataLoader(subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available())
 ds_loader = DataLoader(subjects_dataset, batch_size=1)
 
-def set_parameter_requires_grad(model, feature_extracting):
-    if feature_extracting:
-        for param in model.parameters():
-            param.requires_grad = False
+#def set_parameter_requires_grad(model, feature_extracting):
+#    if feature_extracting:
+#        for param in model.parameters():
+#            param.requires_grad = False
 
-# Load model, initialize CrossEntropyLoss and Adam optimizer
+## Load model, initialize CrossEntropyLoss and Adam optimizer
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cpu") # if the model is too big
 model = resnet50(sample_input_D=256, sample_input_H=256, sample_input_W=256, num_seg_classes=n_classes)
 model = nn.Sequential(model, nn.AvgPool3d(32), nn.Flatten(), nn.Linear(2048, 2))
 net_dict = model.state_dict()
@@ -138,6 +132,7 @@ model = medcam.inject(model, output_dir=os.path.join(output_dir, "attention_maps
 model.to(device).eval()
 #print(summary(model, (1, 256, 256, 256)))
 
+## Launch predictions
 #with torch.inference_mode():
 with torch.no_grad():
     # ALL
@@ -161,58 +156,3 @@ with torch.no_grad():
     saver.finalize()
     elapsed_time = time.time() - start_time
     print(elapsed_time)
-#    ## TRAIN
-#    #num_correct = 0.0
-#    #metric_count = 0
-#    ##saver = CSVSaver(output_dir="./output_test")
-#    #saver = CSVSaver(output_dir=os.path.join(output_dir, "train"))
-#    #for val_data in train_loader:
-#    #    val_images, val_labels = val_data["image"]['data'].to(device), val_data["label"].long().to(device)
-#    #    val_outputs_raw = model(val_images)
-#    #    val_outputs = val_outputs_raw.argmax(dim=1)
-#    #    value = torch.eq(val_outputs, val_labels)
-#    #    metric_count += len(value)
-#    #    num_correct += value.sum().item()
-#    #    #saver.save_batch(val_outputs, val_data["image_meta_dict"])
-#    #    saver.save_batch(val_outputs_raw)
-#    #    break
-#    #metric = num_correct / metric_count
-#    #print("evaluation metric:", metric)
-#    #saver.finalize()
-#    ## VALIDATION
-#    #num_correct = 0.0
-#    #metric_count = 0
-#    ##saver = CSVSaver(output_dir="./output_test")
-#    #saver = CSVSaver(output_dir=os.path.join(output_dir, "validation"))
-#    #for val_data in val_loader:
-#    #    val_images, val_labels = val_data["image"]['data'].to(device), val_data["label"].long().to(device)
-#    #    #val_images, val_labels = val_data["image"].to(device), val_data["label"].to(device)
-#    #    val_outputs_raw = model(val_images)
-#    #    val_outputs = val_outputs_raw.argmax(dim=1)
-#    #    value = torch.eq(val_outputs, val_labels)
-#    #    metric_count += len(value)
-#    #    num_correct += value.sum().item()
-#    #    #saver.save_batch(val_outputs, val_data["image_meta_dict"])
-#    #    saver.save_batch(val_outputs_raw)
-#    #metric = num_correct / metric_count
-#    #print("evaluation metric:", metric)
-#    #saver.finalize()
-#    ## TEST
-#    #num_correct = 0.0
-#    #metric_count = 0
-#    ##saver = CSVSaver(output_dir="./output_test")
-#    #saver = CSVSaver(output_dir=os.path.join(output_dir, "test"))
-#    #for val_data in test_loader:
-#    #    val_images, val_labels = val_data["image"]['data'].to(device), val_data["label"].long().to(device)
-#    #    #val_images, val_labels = val_data["image"].to(device), val_data["label"].to(device)
-#    #    val_outputs_raw = model(val_images)
-#    #    val_outputs = val_outputs_raw.argmax(dim=1)
-#    #    value = torch.eq(val_outputs, val_labels)
-#    #    metric_count += len(value)
-#    #    num_correct += value.sum().item()
-#    #    #saver.save_batch(val_outputs, val_data["image_meta_dict"])
-#    #    saver.save_batch(val_outputs_raw)
-#    #metric = num_correct / metric_count
-#    #print("evaluation metric:", metric)
-#    #saver.finalize()
-#
