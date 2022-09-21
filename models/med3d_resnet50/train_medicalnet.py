@@ -2,7 +2,7 @@
 
 # Use example: python preprocessing.py /home/melanie/BIDS_data_test /home/melanie/BIDS_data_test/transforms 
 
-# Import libraries
+## Import libraries
 import os
 import shutil
 import tempfile
@@ -47,10 +47,10 @@ import torch.nn as nn
 #print_config()
 
 
-# Set the seed for reproducibility
+## Set the seed for reproducibility
 set_determinism(seed=0)
 
-
+## Create a parser to let the user give instructions
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
@@ -60,19 +60,26 @@ parser.add_argument('--n_classes', default='2', help='Integer; Number of classes
 
 args = parser.parse_args()
 
-# BIDS data
+## Parse Data
 bids_dir = args.bids_dir
 output_dir = args.output_dir
-makedir(output_dir)
 n_classes = args.n_classes 
-# Create log file
+
+## Create output directory
+makedir(output_dir)
+
+## Create log file
 log, logclose = create_logger(log_filename=os.path.join(output_dir, 'training.log'))
 
-# Find good files
-# Get labels from participants.tsv
+## Find good files - Get labels from participants.tsv
 # 1- read tsv file with pd
 df_participants = pd.read_csv(os.path.join(bids_dir, "participants.tsv"), sep="\t", dtype=str)
 # 2- make subjects_to_analyze match subids
+common_subjects_to_analyze = df_participants.participant_id.tolist()
+datasets = df_participants.dataset.tolist() 
+labels = df_participants.label.astype(float).tolist()
+
+## Create training and validation subjects datasets to be able to create dataloader
 def nib_reader(path):
     load_img = nib.load(path)
     img = np.squeeze(load_img.get_fdata())
@@ -81,31 +88,23 @@ def nib_reader(path):
     load_img.uncache()
     return [torch.tensor(img, dtype=torch.float32), affine]
 
-common_subjects_to_analyze = df_participants.participant_id.tolist()
-datasets = df_participants.dataset.tolist() 
-labels = df_participants.label.astype(float).tolist()
-
 train_subjects = []
 validation_subjects = []
-#test_subjects = []
 for i, subid in enumerate(common_subjects_to_analyze):
     if "train" in datasets[i]:
-        #common_filenames = glob(os.path.join(bids_dir, "preprocessed_2", "train", "%s_prep_2.nii.gz"%subid))
         filename = os.path.join(bids_dir, "preprocessed_2", "train", subid + "_prep_2.nii.gz")
         train_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
     elif "val" in datasets[i]:
-        #common_filenames = glob(os.path.join(bids_dir, "preprocessed_2", "val", "%s_prep_2.nii.gz"%subid))
         validation_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(bids_dir, "preprocessed_2", "val", subid + "_prep_2.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
 
 train_subjects_dataset = tio.SubjectsDataset(train_subjects)
 validation_subjects_dataset = tio.SubjectsDataset(validation_subjects)
 
-# Dataloader
+## Dataloader to be able to launch training
 train_loader = DataLoader(train_subjects_dataset, batch_size=2, pin_memory=torch.cuda.is_available(), shuffle=True)
 val_loader = DataLoader(validation_subjects_dataset, batch_size=2, pin_memory=torch.cuda.is_available())
 
-
-# Load model, initialize CrossEntropyLoss and Adam optimizer
+## Load model, initialize CrossEntropyLoss and Adam optimizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = resnet50(sample_input_D=256, sample_input_H=256, sample_input_W=256, num_seg_classes=n_classes)
 net_dict = model.state_dict()
@@ -115,6 +114,7 @@ pretrain = torch.load(pretrain_path)
 pretrain_dict = {k: v for k, v in pretrain['state_dict'].items() if k in net_dict.keys()}
 net_dict.update(pretrain_dict)
 model.load_state_dict(net_dict)
+# Set the parameters that need to be optimized to True and the others to False
 for name, param in model.named_parameters():
     #if param.requires_grad:
     #    print(name)
@@ -131,7 +131,7 @@ loss_function = torch.nn.CrossEntropyLoss(ignore_index=-1)
 optimizer = torch.optim.Adam(model.parameters(), 1e-3)
 
 #CUDA_LAUNCH_BLOCKING=1
-# start a typical PyTorch training
+## start a typical PyTorch training
 val_interval = 2
 best_metric = -1
 best_metric_epoch = -1
