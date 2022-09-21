@@ -1,35 +1,35 @@
+#!/bin/usr/python3
+
 
 # Use example: python run_highresnet.py ../data/train1/BIDS_data_brain output_highresnet_train1 
 
+
+## Import libraries
 import time
+import datetime
+from pathlib import Path
+import os
+from glob import glob
+import argparse
+
 import nibabel as nib
 import numpy as np
 import pandas as pd
-import os
-from glob import glob
 from helpers import makedir
-
-import datetime
-from pathlib import Path
 
 import torch
 torch.set_grad_enabled(False);
 import numpy as np
 import torchio as tio
-#from tqdm.notebook import tqdm, trange
 from torchvision.datasets.utils import download_and_extract_archive
-#import visualization
-#plot_volume = visualization.plot_volume_interactive
-#%config InlineBackend.figure_format = 'retina'
+
+# Set the seed for reproducibility
 torch.manual_seed(20202021)
 print('TorchIO version:', tio.__version__)
 print('Last run:', datetime.date.today())
-import argparse
 
 
-#def get_files():
-#    return
-
+## Define functions useful to run highres3dnet
 def get_lr_remapping(table_path):
     df = pd.read_csv(table_path, sep=' ', names=['Label', 'Name', *'RGBA'])
     mapping = {}
@@ -184,10 +184,6 @@ if __name__=='__main__':
     participants = pd.read_csv(os.path.join(bids_dir, "participants.tsv"), sep="\t", dtype=str)["participant_id"].tolist()
     already_seg = pd.read_csv("test2_already_segmented.csv", header=None)[0].tolist()
     already_seg = list(map(lambda x: x.split("_")[0], already_seg))
-    #subids_test_available = pd.read_csv("./subids_test_available.csv", index_col=None, header=None, dtype=str)[0].tolist()
-    #print(subids_test_available)
-    #filenames_test_available = [] 
-    #filenames_no_test_available = [] 
     filenames_participants = []
     output_names = []
     for k, f in enumerate(filenames):
@@ -195,6 +191,25 @@ if __name__=='__main__':
         #subid = (((f.split("/")[-1]).split(".nii.gz")[0]).split("-00")[-1]).split("_")[0]
         #print(subid)
         #subid = (f.split("/")[-1]).split(".nii.gz")[0]
+        if subid in participants:
+            if subid not in already_seg:
+                filenames_participants.append(f)
+                output_names.append(subid + "_tta_full_seg.nii.gz")
+    #print(len(output_names))
+    
+    ## Run highresnet in tta mode
+    run_highresnet_tta(filenames_participants, output_names, output_dir)
+
+    ## Version for participants when test is available
+    #subids_test_available = pd.read_csv("./subids_test_available.csv", index_col=None, header=None, dtype=str)[0].tolist()
+    #print(subids_test_available)
+    #filenames_test_available = []
+    #filenames_no_test_available = []
+    #for k, f in enumerate(filenames):
+        #subid = (((f.split("/")[-1]).split(".nii.gz")[0]).split("sub-")[-1]).split("_")[0]
+        ##subid = (((f.split("/")[-1]).split(".nii.gz")[0]).split("-00")[-1]).split("_")[0]
+        ##print(subid)
+        ##subid = (f.split("/")[-1]).split(".nii.gz")[0]
         #if (subid.split("_")[0]).split("-")[-1] in subids_test_available:
         #    #output_name = subid + "_tta_full_seg.nii.gz"
         #    #output_names.append(output_name)
@@ -203,13 +218,9 @@ if __name__=='__main__':
         #    output_name = subid + "_tta_full_seg.nii.gz"
         #    output_names.append(output_name)
         #    filenames_no_test_available.append(f)
-        if subid in participants:
-            if subid not in already_seg:
-                filenames_participants.append(f)
-                output_names.append(subid + "_tta_full_seg.nii.gz")
-
-    print(len(output_names))
+    #run_highresnet(filenames_test_available, output_names, output_dir)
     #run_highresnet(filenames_no_test_available, output_names, output_dir)
-    run_highresnet_tta(filenames_participants, output_names, output_dir)
+
+    ## Simple path
     #mri_path = "../data/train1/BIDS_data_brain/sub-28863/anat/sub-28863_T1w.nii.gz"
     #run_highresnet(mri_path)
