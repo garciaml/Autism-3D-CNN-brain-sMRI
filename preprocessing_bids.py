@@ -34,18 +34,19 @@ set_determinism(seed=0)
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
-parser.add_argument('outdir', default='/bids_dir/derivatives', help='The directory with the input dataset '
+parser.add_argument('outdir', default='/bids_dir/preprocessed', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
 args = parser.parse_args()
 
 ## Parse data
 bids_dir = args.bids_dir
+outdir = args.outdir
 
 ## Create output directories
-makedir(os.path.join(bids_dir, "preprocessed_2"))
-makedir(os.path.join(bids_dir, "preprocessed_2", "train"))
-makedir(os.path.join(bids_dir, "preprocessed_2", "val"))
-makedir(os.path.join(bids_dir, "preprocessed_2", "test"))
+makedir(outdir)
+makedir(os.path.join(outdir, "train"))
+makedir(os.path.join(outdir, "val"))
+makedir(os.path.join(outdir, "test"))
 
 ## Find good files
 subject_dirs = glob(os.path.join(bids_dir, "sub-*"))
@@ -123,15 +124,15 @@ for i, subid in enumerate(common_subjects_to_analyze):
             subject = tio.Subject(image = tio.ScalarImage(common_filenames[i], reader=nib_reader), label=torch.tensor(labels[i]))
             transformed_subject = transform(subject)
             img = nib.Nifti1Image(transformed_subject['image']['data'].cpu().detach().numpy(), transformed_subject['image']['affine'])
-            nib.save(img, os.path.join(bids_dir, "preprocessed_2", "train", subid + "_prep_2.nii.gz"))
+            nib.save(img, os.path.join(outdir, "train", subid + "_prep.nii.gz"))
         elif "val" in datasets[i]:
             subject = tio.Subject(image = tio.ScalarImage(common_filenames[i], reader=nib_reader), label=torch.tensor(labels[i]))
             transformed_subject = transform(subject)
             img = nib.Nifti1Image(transformed_subject['image']['data'].cpu().detach().numpy(), transformed_subject['image']['affine'])
-            nib.save(img, os.path.join(bids_dir, "preprocessed_2", "val", subid + "_prep_2.nii.gz"))
+            nib.save(img, os.path.join(outdir, "val", subid + "_prep.nii.gz"))
         elif "test" in datasets[i]:
             subject = tio.Subject(image = tio.ScalarImage(common_filenames[i], reader=nib_reader), label=torch.tensor(labels[i]))
             transformed_subject = transform(subject)
             img = nib.Nifti1Image(transformed_subject['image']['data'].cpu().detach().numpy(), transformed_subject['image']['affine'])
-            nib.save(img, os.path.join(bids_dir, "preprocessed_2", "test", subid + "_prep_2.nii.gz"))
+            nib.save(img, os.path.join(outdir, "test", subid + "_prep.nii.gz"))
 

@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
 parser.add_argument('subjects_csv', help="The csv file containing information about the subjects to be preprocessed.")
-parser.add_argument('outdir', help="The name of the output directory in the BIDS directory.")
+parser.add_argument('outdir', default="/bids_dir/preprocessed/test2", help="The name of the output directory.")
 
 args = parser.parse_args()
 
@@ -41,7 +41,7 @@ bids_dir = args.bids_dir
 outdir = args.outdir
 
 ## Create output directory
-makedir(os.path.join(bids_dir, outdir))
+makedir(outdir)
 
 ## Find good files
 subids_to_preprocess = pd.read_csv(args.subjects_csv, dtype=str).SUB_ID.astype(str).tolist()
@@ -91,4 +91,4 @@ for i, subid in enumerate(subjects_to_analyze):
     subject = tio.Subject(image = tio.ScalarImage(filenames[i], reader=nib_reader))
     transformed_subject = transform(subject)
     img = nib.Nifti1Image(transformed_subject['image']['data'].cpu().detach().numpy(), transformed_subject['image']['affine'])
-    nib.save(img, os.path.join(bids_dir, outdir, subid + "_prep_2.nii.gz"))
+    nib.save(img, os.path.join(outdir, subid + "_prep.nii.gz"))

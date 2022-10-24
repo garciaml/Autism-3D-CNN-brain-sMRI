@@ -25,8 +25,8 @@ from torchvision.datasets.utils import download_and_extract_archive
 
 # Set the seed for reproducibility
 torch.manual_seed(20202021)
-print('TorchIO version:', tio.__version__)
-print('Last run:', datetime.date.today())
+#print('TorchIO version:', tio.__version__)
+#print('Last run:', datetime.date.today())
 
 
 ## Define functions useful to run highres3dnet

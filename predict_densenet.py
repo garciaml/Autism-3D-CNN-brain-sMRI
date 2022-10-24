@@ -38,6 +38,7 @@ set_determinism(seed=0)
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
+parser.add_argument('prep_dir', default='/bids_dir', help='The directory with the input dataset preprocessed.')
 parser.add_argument('pretrain_path', help='The path where the pretrained model is stored.')
 parser.add_argument('output_dir', help='The directory where the predictions should be stored.')
 parser.add_argument('--n_classes', default='2', help='Integer; Number of classes for the classification model.')
@@ -46,6 +47,7 @@ args = parser.parse_args()
 
 # BIDS data
 bids_dir = args.bids_dir
+prep_dir = args.prep_dir
 pretrain_path = args.pretrain_path
 output_dir = args.output_dir
 makedir(output_dir)
@@ -82,19 +84,19 @@ validation_meta_data = {"SUB_ID": [], "filename": [], "label": []}
 test_meta_data = {"SUB_ID": [], "filename": [], "label": []}
 for i, subid in enumerate(common_subjects_to_analyze):
     if "train" in datasets[i]:
-        filename = os.path.join(bids_dir, "preprocessed_2", "train", subid + "_prep_2.nii.gz")
+        filename = os.path.join(prep_dir, "train", subid + "_prep.nii.gz")
         train_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
         train_meta_data['SUB_ID'].append(subid)
         train_meta_data['filename'].append(filename)
         train_meta_data['label'].append(labels[i])
     elif "val" in datasets[i]:
-        filename = os.path.join(bids_dir, "preprocessed_2", "val", subid + "_prep_2.nii.gz")
+        filename = os.path.join(prep_dir, "val", subid + "_prep.nii.gz")
         validation_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
         validation_meta_data['SUB_ID'].append(subid)
         validation_meta_data['filename'].append(filename)
         validation_meta_data['label'].append(labels[i])
     elif "test" in datasets[i]:
-        filename = os.path.join(bids_dir, "preprocessed_2", "test", subid + "_prep_2.nii.gz")
+        filename = os.path.join(prep_dir, "test", subid + "_prep.nii.gz")
         test_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
         test_meta_data['SUB_ID'].append(subid)
         test_meta_data['filename'].append(filename)

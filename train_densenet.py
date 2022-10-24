@@ -1,6 +1,6 @@
 #!/bin/usr/python3
 
-# Use example: python preprocessing.py /home/melanie/BIDS_data_test /home/melanie/BIDS_data_test/transforms 
+# Use example: python preprocessing.py /home/melanie/BIDS_data_test /home/melanie/BIDS_data/test/preprocessed /home/melanie/BIDS_data_test/transforms 
 
 ## Import libraries
 import os
@@ -33,6 +33,7 @@ set_determinism(seed=0)
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
+parser.add_argument('prep_dir', default='/bids_dir/preprocessed', help='The directory with the input dataset preprocessed.')
 parser.add_argument('output_dir', default='/out_dir', help='The directory where the models '
                     'should be stored.')
 parser.add_argument('--n_classes', default='2', help='Integer; Number of classes for the classification model.')
@@ -41,6 +42,7 @@ args = parser.parse_args()
 
 ## Parse Data
 bids_dir = args.bids_dir
+prep_dir = args.prep_dir
 output_dir = args.output_dir
 n_classes = int(args.n_classes) 
 
@@ -71,9 +73,9 @@ train_subjects = []
 validation_subjects = []
 for i, subid in enumerate(common_subjects_to_analyze):
     if "train" in datasets[i]:
-        train_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(bids_dir, "preprocessed_2", "train", subid + "_prep_2.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
+        train_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(prep_dir, "train", subid + "_prep.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
     elif "val" in datasets[i]:
-        validation_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(bids_dir, "preprocessed_2", "val", subid + "_prep_2.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
+        validation_subjects.append(tio.Subject(image = tio.ScalarImage(os.path.join(prep_dir, "val", subid + "_prep.nii.gz"), reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
 
 train_subjects_dataset = tio.SubjectsDataset(train_subjects)
 validation_subjects_dataset = tio.SubjectsDataset(validation_subjects)

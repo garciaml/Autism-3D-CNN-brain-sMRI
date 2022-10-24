@@ -35,8 +35,7 @@ set_determinism(seed=0)
 
 ## Define a parser to let the user give instructions
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
-parser.add_argument('indir', default='/indir', help='The directory with the input dataset '
-                    'formatted according to the BIDS standard.')
+parser.add_argument('indir', default='/bids_dir/preprocessed/test2', help='The directory with the input dataset preprocessed.')
 parser.add_argument('subjects_csv', help='The file conatining information on the subjects (like the label for instance).')
 parser.add_argument('pretrain_path', help='The path where the pretrained model is stored.')
 parser.add_argument('output_dir', help='The directory where the predictions should be stored.')
@@ -78,7 +77,7 @@ subjects = []
 meta_data = {"SUB_ID": [], "filename": [], "label": []}
 for i, subid in enumerate(common_subjects_to_analyze):
     try:
-        filename = os.path.join(indir, subid + "_prep_2.nii.gz")
+        filename = os.path.join(indir, subid + "_prep.nii.gz")
         subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
         meta_data['SUB_ID'].append(subid)
         meta_data['filename'].append(filename)

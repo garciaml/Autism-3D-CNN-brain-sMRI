@@ -34,10 +34,9 @@ from medcam import medcam
 set_determinism(seed=0)
 
 
-parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
-parser.add_argument('indir', default='/indir', help='The directory with the input dataset '
-                    'formatted according to the BIDS standard.')
-parser.add_argument('subjects_csv', help='The file conatining information on the subjects (like the label for instance).')
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('indir', default='/bids_dir/preprocessed/test2', help='The directory with the input dataset preprocessed.')
+parser.add_argument('subjects_csv', help='The file containing information on the subjects (like the label for instance).')
 parser.add_argument('pretrain_path', help='The path where the pretrained model is stored.')
 parser.add_argument('output_dir', help='The directory where the predictions should be stored.')
 parser.add_argument('--n_classes', default='2', help='Integer; Number of classes for the classification model.')
@@ -49,9 +48,6 @@ indir = args.indir
 pretrain_path = args.pretrain_path
 output_dir = args.output_dir
 makedir(output_dir)
-#makedir(os.path.join(output_dir, "train"))
-#makedir(os.path.join(output_dir, "validation"))
-#makedir(os.path.join(output_dir, "test"))
 makedir(os.path.join(output_dir, "attention_maps"))
 n_classes = int(args.n_classes) 
 # Create log file
@@ -76,39 +72,11 @@ common_subjects_to_analyze = df_participants.SUB_ID.tolist()
 datasets = df_participants.dataset.tolist() 
 labels = df_participants.label.astype(float).tolist()
 
-#train_subjects = []
-#validation_subjects = []
-#test_subjects = []
-#train_meta_data = {"SUB_ID": [], "filename": [], "label": []}
-#validation_meta_data = {"SUB_ID": [], "filename": [], "label": []}
-#test_meta_data = {"SUB_ID": [], "filename": [], "label": []}
-#for i, subid in enumerate(common_subjects_to_analyze):
-#    if "train" in datasets[i]:
-#        filename = os.path.join(indir, "preprocessed_2", "train", subid + "_prep_2.nii.gz")
-#        train_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
-#        train_meta_data['SUB_ID'].append(subid)
-#        train_meta_data['filename'].append(filename)
-#        train_meta_data['label'].append(labels[i])
-#    elif "val" in datasets[i]:
-#        filename = os.path.join(indir, "preprocessed_2", "val", subid + "_prep_2.nii.gz")
-#        validation_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
-#        validation_meta_data['SUB_ID'].append(subid)
-#        validation_meta_data['filename'].append(filename)
-#        validation_meta_data['label'].append(labels[i])
-#    elif "test" in datasets[i]:
-#        filename = os.path.join(indir, "preprocessed_2", "test", subid + "_prep_2.nii.gz")
-#        test_subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
-#        test_meta_data['SUB_ID'].append(subid)
-#        test_meta_data['filename'].append(filename)
-#        test_meta_data['label'].append(labels[i])
-#
-#subjects_dataset = tio.SubjectsDataset(train_subjects + validation_subjects + test_subjects)
-
 subjects = []
 meta_data = {"SUB_ID": [], "filename": [], "label": []}
 for i, subid in enumerate(common_subjects_to_analyze):
     try:
-        filename = os.path.join(indir, subid + "_prep_2.nii.gz")
+        filename = os.path.join(indir, subid + "_prep.nii.gz")
         subjects.append(tio.Subject(image = tio.ScalarImage(filename, reader=nib_reader), label=torch.tensor(labels[i], dtype=torch.float32)))
         meta_data['SUB_ID'].append(subid)
         meta_data['filename'].append(filename)
@@ -119,15 +87,9 @@ for i, subid in enumerate(common_subjects_to_analyze):
 subjects_dataset = tio.SubjectsDataset(subjects)
 
 # Save meta data
-#pd.DataFrame(train_meta_data).to_csv(os.path.join(output_dir, "train", "train_meta_data.csv"))
-#pd.DataFrame(validation_meta_data).to_csv(os.path.join(output_dir, "validation", "validation_meta_data.csv"))
-#pd.DataFrame(test_meta_data).to_csv(os.path.join(output_dir, "test", "test_meta_data.csv"))
 pd.DataFrame(meta_data).to_csv(os.path.join(output_dir, "meta_data.csv"))
 
 # Dataloader
-#train_loader = DataLoader(train_subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available(), shuffle=True)
-#val_loader = DataLoader(validation_subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available())
-#test_loader = DataLoader(test_subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available())
 ds_loader = DataLoader(subjects_dataset, batch_size=1, pin_memory=torch.cuda.is_available())
 
 
