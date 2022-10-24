@@ -11,7 +11,11 @@ Preprint available: https://doi.org/10.1101/2022.10.18.22281196
 We used Monai (https://github.com/Project-MONAI/MONAI) to build the DenseNet121 network and MedicalNet to keep on training a pre-trained ResNet50 model (https://github.com/Tencent/MedicalNet). 
 
 ### Instructions
-
+1- Start the project by running the preprocessing script. Consider to stucture your data following the BIDS organization (https://bids.neuroimaging.io/).
+If your data is BIDS-organized, you may run:
+```
+python ...
+```
 
 ### Citation
 When using our code, please include the following citation:
