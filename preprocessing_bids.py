@@ -17,8 +17,8 @@ import monai
 from monai.config import print_config
 from torch.utils.tensorboard import SummaryWriter
 from monai.utils import set_determinism
-from helpers import makedir
-from log import create_logger
+from utils.helpers import makedir
+from utils.log import create_logger
 from torchsummary import summary
 import time
 import nibabel as nib
@@ -28,10 +28,14 @@ import nibabel as nib
 ## Set the seed for reproducibility
 set_determinism(seed=0)
 
+
+# TODO: change outdir, change in function of new folder utils 
 ## Create a parser to let the user give instructions
 parser = argparse.ArgumentParser(description='Example BIDS App entrypoint script.')
 parser.add_argument('bids_dir', default='/bids_dir', help='The directory with the input dataset '
-                    'formatted according to the BIDS standard.'
+                    'formatted according to the BIDS standard.')
+parser.add_argument('outdir', default='/bids_dir/derivatives', help='The directory with the input dataset '
+                    'formatted according to the BIDS standard.')
 args = parser.parse_args()
 
 ## Parse data

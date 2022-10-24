@@ -17,10 +17,10 @@ import monai
 from monai.config import print_config
 from torch.utils.tensorboard import SummaryWriter
 from monai.utils import set_determinism
-from helpers import makedir
+from utils.helpers import makedir
 from models.resnet2 import resnet50
 from model import generate_model
-from log import create_logger
+from utils.log import create_logger
 from torchsummary import summary
 import time
 import nibabel as nib

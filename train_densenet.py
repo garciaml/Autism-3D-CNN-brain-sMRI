@@ -17,8 +17,8 @@ import monai
 from monai.config import print_config
 from torch.utils.tensorboard import SummaryWriter
 from monai.utils import set_determinism
-from helpers import makedir
-from log import create_logger
+from utils.helpers import makedir
+from utils.log import create_logger
 from torchsummary import summary
 import time
 import nibabel as nib

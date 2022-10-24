@@ -15,7 +15,7 @@ import argparse
 import nibabel as nib
 import numpy as np
 import pandas as pd
-from helpers import makedir
+from utils.helpers import makedir
 
 import torch
 torch.set_grad_enabled(False);
