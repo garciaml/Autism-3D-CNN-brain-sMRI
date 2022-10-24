@@ -4,7 +4,7 @@ This project aimed at training 3D-CNN models to predict Autism on structural bra
 
 We also used the Guided Grad-CAM and HighRes3DNet algorithms in order to build a method of interpretation of the trained models. 
 
-The abstract ***Towards building an interpretable predictive tool for ASD with 3D Convolutional Neural Networks*, Mélanie Garcia, Clare Kelly** was introduced at the conference the Organization for Human Brain Mapping 2022 held in Glasgow in June 2022.
+The abstract *Towards building an interpretable predictive tool for ASD with 3D Convolutional Neural Networks*, Mélanie Garcia, Clare Kelly was introduced at the conference the Organization for Human Brain Mapping 2022 held in Glasgow in June 2022.
 
 Preprint available: https://doi.org/10.1101/2022.10.18.22281196 
 
@@ -16,4 +16,4 @@ We used Monai (https://github.com/Project-MONAI/MONAI) to build the DenseNet121 
 ### Citation
 When using our code, please include the following citation:
 
-*Towards 3D Deep Learning for neuropsychiatry: predicting Autism diagnosis using an interpretable Deep Learning pipeline applied to minimally processed structural MRI data*, Melanie Garcia, Clare Kelly. medRxiv 2022.10.18.22281196; doi: https://doi.org/10.1101/2022.10.18.22281196 
+***Towards 3D Deep Learning for neuropsychiatry: predicting Autism diagnosis using an interpretable Deep Learning pipeline applied to minimally processed structural MRI data*, Melanie Garcia, Clare Kelly**. medRxiv 2022.10.18.22281196; doi: https://doi.org/10.1101/2022.10.18.22281196 
