@@ -56,6 +56,7 @@ The Med3d-ResNet50 models and the training.log will be saved into *<save_resnet_
 
 
 6- Launch the predictions:
+
 For the DenseNet121 model:
 ```
 python predict_densenet.py <your_bids_dir> <preprocessed_directory> <saved_densenet_model> <output_dir>
