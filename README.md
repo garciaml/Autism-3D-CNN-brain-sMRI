@@ -11,7 +11,7 @@ Preprint available: https://doi.org/10.1101/2022.10.18.22281196
 We used Monai (https://github.com/Project-MONAI/MONAI) to build the DenseNet121 network and MedicalNet to keep on training a pre-trained ResNet50 model (https://github.com/Tencent/MedicalNet). 
 
 ### Instructions
-1- Start the project by running the preprocessing script. Consider to stucture your data following the BIDS organization (https://bids.neuroimaging.io/).
+1- Consider to stucture your data following the BIDS organization (https://bids.neuroimaging.io/).
 Your participants.tsv file should contain: 
 - a column called *participant_id* corresponding to the subject id (the same as the folder names in the BIDS dataset: sub-<participant_id>).
 - a column called *label* corresponding to the binary target variable
@@ -19,7 +19,7 @@ Your participants.tsv file should contain:
 
 2- Make sure to have/to be into the correct environment to run this code.
 
-3- Once that your data is BIDS-organized and that you are in a correct environment, you may run:
+3- Once that your data is BIDS-organized and that you are in a correct environment, you can start the project by running the preprocessing script:
 ```
 python preprocessing_bids.py <your_bids_dir> <preprocessed_directory>
 ```
