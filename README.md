@@ -111,6 +111,15 @@ python predict_medicalnet_subids.py <preprocessed_directory_test2> <subjects_csv
 - a file *predictions.csv* containing the logits (i.e. the probability scores) returned by the model, the first column being for label 0 and second one for label 1. 
 
 
+BRAIN SEGMENTATION with HighRes3DNet
+
+We can segment brain scans to be able to interpret the attention maps previously generated.
+
+9- 
+
+
+
+
 
 
 ### Citation
