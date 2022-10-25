@@ -17,7 +17,7 @@ We used Monai (https://github.com/Project-MONAI/MONAI) to build the DenseNet121 
 1- Consider to stucture your data following the BIDS organization (https://bids.neuroimaging.io/).
 Your participants.tsv file should contain: 
 - a column called *participant_id* corresponding to the subject id (the same as the folder names in the BIDS dataset: sub-<participant_id>).
-- a column called *label* corresponding to the binary target variable
+- a column called *label* corresponding to the binary target variable (here: 0=no diagnosis, 1=Autism)
 - a column called *dataset* corresponding to where (training, validation, testing set) each participant data will be used: the code supports the three modalities *train*, *val*, *test*.
 
 
@@ -48,7 +48,7 @@ The DenseNet121 models and the training.log will be saved into *<save_densenet_m
 
 You can launch Med3d-ResNet50 training by running:
 ```
-python train_densenet.py <your_bids_dir> <preprocessed_directory> <save_resnet_model_dir> <pretrain_path>
+python train_medicalnet.py <your_bids_dir> <preprocessed_directory> <save_resnet_model_dir> <pretrain_path>
 ```
 *<pretrain_path>* corresponds to the path where you stored your model resnet50.pth.
 
@@ -56,10 +56,19 @@ The Med3d-ResNet50 models and the training.log will be saved into *<save_resnet_
 
 
 6- Launch the predictions:
+For the DenseNet121 model:
 ```
 python predict_densenet.py <your_bids_dir> <preprocessed_directory> <saved_densenet_model> <output_dir>
 ```
 *<saved_densenet_model>* is the path of the saved DenseNet121 model you want to use for the predictions.
+
+For the Med3d-ResNet50 model:
+```
+python predict_medicalnet.py <your_bids_dir> <preprocessed_directory> <saved_resnet_model> <output_dir>
+```
+*<saved_resnet_model>* is the path of the saved Med3d-ResNet50 model you want to use for the predictions.
+
+
 *<output_dir>* will consist of :
 - a sub-directory *attention_maps* with all the attention maps inside;
 - a sub-directory *train* containing a file *train_meta_data.csv* with info on the participants included in the training set;
@@ -68,6 +77,38 @@ python predict_densenet.py <your_bids_dir> <preprocessed_directory> <saved_dense
 - a file *predictions.csv* containing the logits (i.e. the probability scores) returned by the model, the first column being for label 0 and second one for label 1. 
 
 The file *predictions.csv* and the files in *attention_maps* corresponds to the same index numbers. It was generated such as the files correspond to the train, validation and testing set files in this strict order (see code predict_densenet.py). Thus the total number of files N = N_train + N_val + N_test. 
+
+
+INFERENCE on a second testing set (optional step if all of your testing set was included in your initial BIDS dataset):
+7- You can launch preprocessing with:
+```
+python preprocessing_test2.py <your_bids_dir> <subjects_csv> <preprocessed_directory_test2>
+```
+*<subjects_csv>* contains at least two columns:
+- a column called *SUB_ID* corresponding to the subject id (the same as the folder names in the BIDS dataset: sub-<SUB_ID>).
+- a column called *label* corresponding to the binary target variable
+
+The code will create *<preprocessed_directory_test2>* if it does not exist in your system yet. It will preprocess your data and store it in 
+<preprocessed_directory_test2>.
+
+8- You can launch the predictions:
+For the DenseNet121 model:
+```
+python predict_densenet_subids.py <preprocessed_directory_test2> <subjects_csv> <saved_densenet_model> <output_dir_test2>
+```
+*<saved_densenet_model>* is the path of the saved DenseNet121 model you want to use for the predictions.
+
+
+For the Med3d-ResNet50 model:
+```
+python predict_medicalnet_subids.py <preprocessed_directory_test2> <subjects_csv> <saved_resnet_model> <output_dir_test2>
+```
+*<saved_resnet_model>* is the path of the saved Med3d-ResNet50 model you want to use for the predictions.
+
+*<output_dir_test2>* will consist of : 
+- a sub-directory *attention_maps* with all the attention maps inside;
+- a file *predictions.csv* containing the logits (i.e. the probability scores) returned by the model, the first column being for label 0 and second one for label 1. 
+
 
 
 
