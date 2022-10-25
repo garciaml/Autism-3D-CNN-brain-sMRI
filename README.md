@@ -12,10 +12,21 @@ We used Monai (https://github.com/Project-MONAI/MONAI) to build the DenseNet121 
 
 ### Instructions
 1- Start the project by running the preprocessing script. Consider to stucture your data following the BIDS organization (https://bids.neuroimaging.io/).
-If your data is BIDS-organized, you may run:
+Your participants.tsv file should contain: 
+- a column called *participant_id* corresponding to the subject id (the same as the folder names in the BIDS dataset: sub-<participant_id>).
+- a column called *label* corresponding to the binary target variable
+- a column called *dataset* corresponding to where (training, validation, testing set) each participant data will be used: the code supports the three modalities *train*, *val*, *test*.
+
+2- Make sure to have/to be into the correct environment to run this code.
+
+3- Once that your data is BIDS-organized and that you are in a correct environment, you may run:
 ```
-python ...
+python preprocessing_bids.py <your_bids_dir> <preprocessed_directory>
 ```
+For instance, you can choose the preprocessed directory as being <your_bids_dir>/preprocessed. 
+The code will create <preprocessed_directory> if it does not exist in your system yet. 
+
+
 
 ### Citation
 When using our code, please include the following citation:
