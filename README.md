@@ -22,7 +22,9 @@ Your participants.tsv file should contain:
 
 
 2- Make sure to be into a correct environment to run this code.
-
+```
+pip install -r requirements.txt
+```
 
 ***Training and Testing:***
 
